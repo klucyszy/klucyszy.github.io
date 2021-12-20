@@ -1,5 +1,6 @@
 ---
 layout: post
+comments: true
 title:  "How to setup API integration tests in .NET 6"
 date:   2021-12-17 17:09:35 +0100
 categories: howto
@@ -217,7 +218,28 @@ I decided to create this method in TestBase class, to not remember to save chang
 remember about setting up the database correctly before test.
 Then I'm acting, and checking what is the mocked server response. It should be equivalent to the state, which I arranged before the test.
 
-### References
-- `Supporting integration tests with WebApplicationFactory in .NET 6 <https://andrewlock.net/exploring-dotnet-6-part-6-supporting-integration-tests-with-webapplicationfactory-in-dotnet-6/>`_
-- `Integration tests in ASP.NET Core <https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0>`_
+### References]
+- [Supporting integration tests with WebApplicationFactory in .NET 6](https://andrewlock.net/exploring-dotnet-6-part-6-supporting-integration-tests-with-webapplicationfactory-in-dotnet-6){:target="_blank"}{:rel="noopener noreferrer"}
+- [Integration tests in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-6.0){:target="_blank"}{:rel="noopener noreferrer"}
 
+## Comments
+
+<div id="disqus_thread"></div>
+<script>
+    /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = 'https://klucyszy-github-io.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
