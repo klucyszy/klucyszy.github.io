@@ -11,7 +11,7 @@ tags: [dotnet, ef-core]
 
 ## Introduction
 
-Entity Framework Core is a powerful ORM that facilitates data access in .NET applications. However, mastering its nuances—especially when aiming for a domain-driven design—can be challenging. In this article, we'll explore how to manage entity relationships without relying on the data context within your domain logic. We'll focus on a practical example that underscores the importance of understanding your database's behavior and EF Core's delete behaviors.
+Entity Framework Core is a powerful ORM that facilitates data access in .NET applications. In this article, we'll explore how to manage entity relationships without relying on the data context within your domain logic. We'll focus on a practical example that underscores the importance of understanding your database's behavior and EF Core's delete behaviors.
 
 ## The Scenario: Devices and Permissions
 
