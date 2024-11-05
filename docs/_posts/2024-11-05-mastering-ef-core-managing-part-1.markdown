@@ -7,10 +7,7 @@ categories: [ef-core-series]
 tags: [dotnet, ef-core]
 ---
 
-
-# Mastering EF Core: Managing Relationships Without Data Context Dependence (Part 1)
-
-**Welcome to the first installment of our "Mastering EF Core" series!** This series will delve into real-life scenarios and lessons learned by our team as we navigate the intricacies of writing clean, object-oriented code using Entity Framework (EF) Core. Our goal is to share practical insights that can help you harness the full potential of EF Core in your applications.
+**Welcome to the first chapter of my "Mastering EF Core" series!** This series will delve into real-life scenarios and lessons learned by our team as we navigate the intricacies of writing clean, object-oriented code using Entity Framework (EF) Core. Our goal is to share practical insights that can help you harness the full potential of EF Core in your applications.
 
 ## Introduction
 
