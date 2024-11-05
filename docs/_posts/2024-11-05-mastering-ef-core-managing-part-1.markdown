@@ -2,7 +2,7 @@
 layout: post
 comments: true
 title:  "Mastering EF Core: Managing Relationships Without Data Context Dependence (Part 1)"
-date:   2021-12-17 17:09:35 +0100
+date:   2024-11-05 10:00:00 +0100
 categories: [ef-core-series]
 tags: [dotnet, ef-core]
 ---
