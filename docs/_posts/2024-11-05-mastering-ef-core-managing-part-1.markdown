@@ -121,7 +121,7 @@ public sealed class RemovePermissionsHandlerBefore
 
 This code directly manipulates the `DbContext` to remove the permission, coupling our domain logic with the data access layer.
 
-## The Solution: Understanding and Using `DeleteBehavior.ClientCascade`
+## The Solution: Understanding and using ClientCascade behavior
 
 To achieve a cleaner, more object-oriented approach, we need to adjust our understanding of delete behaviors and how our database handles them.
 
