@@ -14,7 +14,7 @@ tags: [dotnet, ef-core]
 
 ## Introduction
 
-Entity Framework Core is a powerful ORM that facilitates data access in .NET applications. However, mastering its nuances—especially when aiming for a domain-driven design—can be challenging. In this article, we'll explore how to manage entity relationships without relying on the data context (`_dataContext`) within your domain logic. We'll focus on a practical example that underscores the importance of understanding your database's behavior and EF Core's delete behaviors.
+Entity Framework Core is a powerful ORM that facilitates data access in .NET applications. However, mastering its nuances—especially when aiming for a domain-driven design—can be challenging. In this article, we'll explore how to manage entity relationships without relying on the data context within your domain logic. We'll focus on a practical example that underscores the importance of understanding your database's behavior and EF Core's delete behaviors.
 
 ## The Scenario: Devices and Permissions
 
@@ -62,11 +62,11 @@ public sealed class Permission
 In this setup:
 
 - **Device** has a collection of **Permissions**.
-- We aim to remove a permission using object-oriented principles without direct manipulation of the `_dataContext`.
+- We aim to remove a permission using object-oriented principles without direct manipulation our `DbContext` implementation.
 
 ## The Challenge: Constraints and Delete Behaviors
 
-When attempting to remove a permission from a device using `device.RemovePermission(permissionId)`, we encounter a foreign key constraint error upon calling `_dataContext.SaveChangesAsync()`. This error arises due to the way we've configured the relationship in EF Core and how our database handles delete behaviors.
+When attempting to remove a permission from a device using `device.RemovePermission(permissionId)`, we encounter a foreign key constraint error upon calling `_dbContext.SaveChangesAsync()`. This error arises due to the way we've configured the relationship in EF Core and how our database handles delete behaviors.
 
 ### Initial Relationship Configuration
 
@@ -86,7 +86,7 @@ public class DeviceEntityTypeConfiguration : IEntityTypeConfiguration<Device>
 }
 ```
 
-Using `DeleteBehavior.Restrict` means that EF Core will prevent the deletion of a `Permission` if it would violate a foreign key constraint. This setup requires us to manage deletions explicitly, often leading to less clean code that directly interacts with `_dataContext`.
+Using `DeleteBehavior.Restrict` means that EF Core will prevent the deletion of a `Permission` if it would violate a foreign key constraint with `Device`. This setup requires us to manage deletions explicitly, often leading to less clean code that directly interacts with `DbContext`.
 
 ### The Problem in Code
 
@@ -95,16 +95,16 @@ Using `DeleteBehavior.Restrict` means that EF Core will prevent the deletion of 
 ```csharp
 public sealed class RemovePermissionsHandlerBefore
 {
-    private readonly DataContext _dataContext;
+    private readonly DataContext _dbContext;
 
     public RemovePermissionsHandlerBefore(DataContext dataContext)
     {
-        _dataContext = dataContext;
+        _dbContext = dataContext;
     }
 
     public async Task Handle(int deviceId, int permissionId, CancellationToken cancellationToken)
     {
-        Device device = await _dataContext.Devices
+        Device device = await _dbContext.Devices
             .Include(d => d.Permissions)
             .FirstOrDefaultAsync(d => d.Id == deviceId, cancellationToken);
         
@@ -114,13 +114,15 @@ public sealed class RemovePermissionsHandlerBefore
         
         if (permission is null) return;
         
-        _dataContext.Permissions.Remove(permission);
-        await _dataContext.SaveChangesAsync(cancellationToken);
+        // We do not want to manually remove related Permission entities from the database
+        _dbContext.Permissions.Remove(permission);
+        
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }
 ```
 
-This code directly manipulates the `_dataContext` to remove the permission, coupling our domain logic with the data access layer.
+This code directly manipulates the `DbContext` to remove the permission, coupling our domain logic with the data access layer.
 
 ## The Solution: Understanding and Using `DeleteBehavior.ClientCascade`
 
@@ -167,23 +169,25 @@ public class DeviceEntityTypeConfiguration : IEntityTypeConfiguration<Device>
 ```csharp
 public sealed class RemovePermissionsHandlerAfter
 {
-    private readonly DataContext _dataContext;
+    private readonly DataContext _dbContext;
 
     public RemovePermissionsHandlerAfter(DataContext dataContext)
     {
-        _dataContext = dataContext;
+        _dbContext = dataContext;
     }
 
     public async Task Handle(int deviceId, int permissionId, CancellationToken cancellationToken)
     {
-        Device device = await _dataContext.Devices
+        Device device = await _dbContext.Devices
             .Include(d => d.Permissions)
             .FirstOrDefaultAsync(d => d.Id == deviceId, cancellationToken);
         
         if (device is null) return;
         
+        // Now, we can remove the permission directly on Device without manipulating the DbContext
         device.RemovePermission(permissionId);
-        await _dataContext.SaveChangesAsync(cancellationToken);
+        
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }
 ```
