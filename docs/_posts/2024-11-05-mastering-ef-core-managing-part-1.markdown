@@ -7,19 +7,26 @@ categories: [ef-core-series]
 tags: [dotnet, ef-core]
 ---
 
-**Welcome to the first chapter of my "Mastering EF Core" series!** This series will delve into real-life scenarios and lessons learned by our team as we navigate the intricacies of writing clean, object-oriented code using Entity Framework (EF) Core. Our goal is to share practical insights that can help you harness the full potential of EF Core in your applications.
+**Welcome to the first chapter of my "Mastering EF Core" series!** 
+
+This series will dive into real-life scenarios and lessons I’ve learned while writing clean, object-oriented code using Entity Framework (EF) Core. My goal is to share with you practical insights that can help you unlock the full potential of EF Core in your applications.
 
 ## Introduction
 
-Entity Framework Core is a powerful ORM that facilitates data access in .NET applications. In this article, we'll explore how to manage entity relationships without relying on the data context within your domain logic. We'll focus on a practical example that underscores the importance of understanding your database's behavior and EF Core's delete behaviors.
+Entity Framework Core is a powerful ORM that facilitates data access in .NET applications. In this article, we'll explore how to manage entity relationships without relying on the Entity Framework `DbContext` within your domain logic. I will emphasize the importance of understanding `OnDelete` behaviors and how they can impact your application's behavior.
+
 
 ## The Scenario: Devices and Permissions
 
 Imagine we're building an application that manages devices and their permissions. While our example uses "Device" and "Permission," the concepts apply broadly to any domain involving complex relationships.
 
+### Tech Stack
+
+This example is designed for applications using .NET 8, EF Core, and either Azure SQL/SQL Server as the database.
+
 ### Entity Definitions
 
-Here's how our entities are defined:
+Here's how our entities look:
 
 ```csharp
 public sealed class Device
@@ -83,7 +90,7 @@ public class DeviceEntityTypeConfiguration : IEntityTypeConfiguration<Device>
 }
 ```
 
-Using `DeleteBehavior.Restrict` means that EF Core will prevent the deletion of a `Permission` if it would violate a foreign key constraint with `Device`. This setup requires us to manage deletions explicitly, often leading to less clean code that directly interacts with `DbContext`.
+Using `DeleteBehavior.Restrict` means that EF will prevent the deletion of a `Permission` if it would violate a foreign key constraint with `Device`. This setup requires us to manage deletions explicitly, often leading to less clean code that directly interacts with `DbContext`.
 
 ### The Problem in Code
 
@@ -119,7 +126,7 @@ public sealed class RemovePermissionsHandlerBefore
 }
 ```
 
-This code directly manipulates the `DbContext` to remove the permission, coupling our domain logic with the data access layer.
+This code directly manipulates the `DbContext` to remove the `Permission`, coupling our domain logic with the data access layer.
 
 ## The Solution: Understanding and using ClientCascade behavior
 
@@ -127,19 +134,19 @@ To achieve a cleaner, more object-oriented approach, we need to adjust our under
 
 ### Evaluating Database Support
 
-Before making changes, it's crucial to evaluate how your database distinguishes between `NoAction` and `Restrict`. Not all databases support different behaviors for these settings. For instance, SQL Server treats `Restrict` and `NoAction` the same way, which can affect how EF Core applies these configurations.
+Before making changes, it’s important to check how your database handles `NoAction` and `Restrict`. Not all databases differentiate between these settings. Azure SQL/SQL Server treats `Restrict` and `NoAction` identically. Even if we configure it as `Restrict` in EF Core, on the database level - is creating non-cascading same foreign key as for `NoAction`.
 
-Understanding your database's capabilities is essential because it determines whether your chosen delete behaviors will function as intended. If the database doesn't support the specific behavior you're relying on, you might encounter unexpected constraint violations or data inconsistencies.
+Knowing your database’s capabilities is key, as it affects whether your delete behaviors will work as expected. If the database doesn’t support a specific behavior, you could face unexpected constraint errors or data inconsistencies on the application side.
 
 ### Understanding `DeleteBehavior.ClientCascade`
 
 `DeleteBehavior.ClientCascade` is an EF Core setting that:
 
-- **Enforces delete behavior on the client side**.
-- **Does not create cascading deletes in the database**.
+- **Enables EF to violate non-cascading FK constraints on application level**.
+- **Creates non-cascading FK on the database level**.
 - **Allows us to remove entities from collections and have EF Core handle the deletions upon `SaveChangesAsync()`**.
 
-By using `ClientCascade`, we can remove a permission from a device's collection, and EF Core will understand that it needs to delete the permission from the database without violating foreign key constraints.
+By using `ClientCascade`, we can remove a permission from a device's collection, and EF Core will understand that it needs to delete the permission from the database.
 
 ### Updated Relationship Configuration
 
@@ -189,7 +196,7 @@ public sealed class RemovePermissionsHandlerAfter
 }
 ```
 
-Now, we're removing the permission directly from the device's collection, adhering to object-oriented principles, and EF Core handles the deletion upon saving changes.
+Now, we're removing the permission directly from the device's collection, adhering to object-oriented principles. EF Core changer tracker updates the removed `Permission` state as `Deleted` and removes it from the database upon calling `_dbContext.SaveChangesAsync()`.
 
 ## Important Considerations
 
@@ -202,13 +209,11 @@ By understanding and correctly applying `DeleteBehavior.ClientCascade`, we can w
 
 ### Stay Tuned for More!
 
-This is just the beginning of our "Mastering EF Core" series. In upcoming articles, we'll dive deeper into real-life scenarios and challenges we've faced, sharing insights and solutions that have expanded our team's knowledge about proper object-oriented programming with EF Core.
+This is just the beginning of my "Mastering EF Core" series. In future articles, I’ll dig into real-world challenges and scenarios I've tackled, sharing insights and solutions that have broadened my understanding of solid object-oriented programming with EF Core.
 
 ### Join the Conversation
 
-Have you encountered similar challenges with EF Core or entity relationships? Share your experiences or solutions in the comments below! Developing a deep understanding of the code you write is essential to building efficient, reliable applications. If you've found unique solutions or hit roadblocks with EF Core’s delete behaviors, let us know!
-
-**By embracing these principles and thoroughly understanding your tools, you can create robust applications that stand the test of time. We hope this article has provided valuable insights and look forward to sharing more in our "Mastering EF Core" series.**
+Have you faced similar issues with EF Core or entity relationships? Share your thoughts or experiences in the comments below!
 
 ## Comments
 
